@@ -42,6 +42,7 @@ static void usock_set_flags(int sock, unsigned int type)
 
 static int usock_connect(int type, struct sockaddr *sa, int sa_len, int family, int socktype, bool server)
 {
+	const int one = 1;
 	int sock;
 
 	sock = socket(family, socktype, 0);
@@ -49,9 +50,10 @@ static int usock_connect(int type, struct sockaddr *sa, int sa_len, int family, 
 		return -1;
 
 	usock_set_flags(sock, type);
+	if (socktype != SOCK_STREAM && type & USOCK_BROADCAST)
+		setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one));
 
 	if (server) {
-		const int one = 1;
 		setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 
 		if (!bind(sock, sa, sa_len) &&
