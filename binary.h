@@ -24,6 +24,9 @@
 /*
  * Syntax for the function is as follows.
  *   %[n][a][lb][01r]{i,y,w,d,q,s}
+ *   
+ *   All the characters that don't follow this will be treated as raw chars
+ *   to be written as they are.
  *
  * Data type
  *   * i - bit
@@ -38,7 +41,7 @@
  *   * 1 - fill the specified space with ones
  *   * r - fill the specified space with random data
  *
- *     String data type is not valid in this case
+ *   String data type is not valid in this case
  *
  * Endianess. No conversion by default
  *   * l - little endian
