@@ -23,7 +23,7 @@
 
 /*
  * Syntax for the function is as follows.
- *   %[n][a][lb][01r]{i,y,w,d,q,s}
+ *   %[p][n][a][lb][01r]{i,y,w,d,q,s}
  *   
  *   All the characters that don't follow this will be treated as raw chars
  *   to be written as they are.
@@ -41,7 +41,8 @@
  *   * 1 - fill the specified space with ones
  *   * r - fill the specified space with random data
  *
- *   String data type is not valid in this case
+ *   String data type is not valid in this case. When quantity is also
+ *   specified, use l/b to separate: %5b0 -> 5 bits of value 0
  *
  * Endianess. No conversion by default
  *   * l - little endian
@@ -55,19 +56,52 @@
  *   * n - number of same datatype (placed together)
  *         this denotes length of string, padded with 0
  *
+ * Pointer. Default everything is passed by value
+ *   * p - specify that passed parameter is a pointer to value(s)
+ *
+ *   Obviously, when quantity is specified, and datatype is not bits, p
+ *   is required.
+ *
  * Some examples:
  *   * %4lw - 4 little endian 2 byte word
  *   * %2i  - 2 bits 'ab' from value b'000000ab'
  *   * %2bi - 2 bits 'ab' from value b'000000ba'
  *   * %2li - 2 bits 'ab' from value b'ab000000'
+ *   * %5y
+ *
+ * Calling functions example:
+ * int32_t dw[]=[1,2,3,4]
+ *
+ * v = writebv("%lw%2i%ay%p4d", 2047, 3, 'n', dw);
+ *
+ * in a big endian computer
+ * // *v = 0xff07c06e00000001000000020000000300000004
+ *
+ * struct my_data_t {
+ *   uint16_t a;
+ *   uint8_t b:2;
+ *   uint8_t unused1:6;
+ *   uint8_t c;
+ *   uint32_t d[4];
+ * } *my_data;
+ * char letter;
+ *
+ * // If we want to have all extracted from the blob
+ * my_data = readbv(v, "%lw%2i%ay%p4d");
+ *
+ * // If we just want to extract the char
+ * readb(v, "%0w%2l0i%ay%4l0d", &letter);
+ *
+ * // We have aligned data, but if we removed the 'a' from %ay, we
+ * wouldn't have unaligned data and this would still work.
  *
  */
 
-void * writeb(char *, ...);
-void * readb(char *, ...);
+int writeb(void *, char *, ...);
+void * writebv(char *, ...);
 
-int vwriteb(void *, char *, ...);
-int vreadb(void *, char *, ...);
+int readb(void *, char *, ...);
+void * readbv(void *, char *);
 
 
 #endif //__LIBUBOX_BINARY_H
